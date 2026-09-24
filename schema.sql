@@ -1,5 +1,5 @@
-CREATE TABLE IF NOT EXISTS item_state (
-  id TEXT PRIMARY KEY,
-  done INTEGER NOT NULL CHECK (done IN (0, 1)),
+CREATE TABLE IF NOT EXISTS shared_document (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );

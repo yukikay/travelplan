@@ -62,12 +62,8 @@ async function ecbFallback(requestedDate, reason) {
 export async function onRequestGet({ request }) {
   const requestedDate = new URL(request.url).searchParams.get('date');
   if (!/^\d{4}-\d{2}-\d{2}$/.test(requestedDate || '') || Number.isNaN(Date.parse(`${requestedDate}T00:00:00Z`))) return json({ error: 'Invalid date' }, 400);
-  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' });
-  // 中行公开页提供当前牌价；历史消费不能拿今天牌价冒充当日牌价。
-  if (requestedDate < today) {
-    try { return json(await ecbFallback(requestedDate, '中行公开页没有稳定的历史汇率接口')); }
-    catch (error) { console.error('Could not read historical rate', error); return json({ error: 'Rate service unavailable' }, 503); }
-  }
+  // 中行公开页提供当前现汇卖出价。即使补记旧账也优先给出银行购买外币的当前估算价，
+  // 并返回真实牌价日期，让前端明确提示它与消费日期不同；实际扣款仍可覆盖估算。
   try {
     const response = await fetch('https://www.boc.cn/sourcedb/whpj/', { headers: { Accept: 'text/html' } });
     if (!response.ok) throw Error(`BOC HTTP ${response.status}`);
